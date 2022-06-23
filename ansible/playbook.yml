@@ -1,0 +1,36 @@
+
+---
+
+ - hosts: linux
+   become: true
+   remote_user: super
+   tasks:
+      - name: Git checkout
+        git:
+           repo: 'https://github.com/hendesu/bootcamp-app.git'
+           dest: /home/super/bootcamp-app
+           update: no
+
+      - name: Install the version '14.19.0' of package "node.js"
+        shell: 'curl -sL https://deb.nodesource.com/setup_14.x -o /tmp/nodesource_setup.sh && sudo bash /tmp/nodesource_setup.sh && sudo apt install nodejs'
+
+
+      - name: Install packages based on package.json using the npm
+        npm:
+          path: "/home/super/bootcamp-app"
+
+
+      - name: run script that's create .env file
+        script: /home/azure/script.sh
+
+      - name: run database
+        shell: 'cd /home/super/bootcamp-app && npm run initdb '
+
+
+      - cron:
+          name: "a job for reboot"
+          special_time: reboot
+          job: "sh -c 'cd /home/super/bootcamp-app  && npm run dev'"
+
+      - name: reboot the machines
+        reboot:
